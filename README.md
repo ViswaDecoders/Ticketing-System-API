@@ -1,8 +1,8 @@
 # Ticketing-System-API
 
-Heroku app: https://ticket--api.herokuapp.com/
-Log file: access.log in current directory
-Video url: https://drive.google.com/file/d/1XWD9zNxdRLsGfxyvMQl8ViGR4S7jtMSw/view?usp=sharing
+- Heroku app: https://ticket--api.herokuapp.com/
+- Log file: access.log in current directory
+- Video url: https://drive.google.com/file/d/1XWD9zNxdRLsGfxyvMQl8ViGR4S7jtMSw/view?usp=sharing
 
 
 # To run
