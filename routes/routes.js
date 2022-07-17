@@ -9,32 +9,41 @@ router.post("/users/new", (req, res) => {
   username = req.body.username;
   role = req.body.role;
   if (role !== "admin" && role !== "employee") {
-    res.status(200).json({ message: "Invalid Role" });
+    return res.status(200).json({ message: "Invalid Role" });
   }
-  jwt.sign({ username, role }, secretKey, async (err, token) => {
-    if (err) {
-      res.status(400).json({ message: error.message });
+  reg_collection.find({ username: username }).toArray(function (err, result) {
+    if (err) return res.status(500).json({ message: err });
+    if (result.length > 0) {
+      res
+        .status(500)
+        .json({ message: "Duplicate user exists, Create New One" });
+    } else {
+      jwt.sign({ username, role }, secretKey, (err, token) => {
+        if (err) {
+          return res.status(400).json({ message: err.message });
+        }
+        const data = {
+          username: username,
+          role: role,
+          auth: token,
+        };
+        reg_collection.insertOne(data, (err, result) => {
+          if (err) {
+            return res.status(500).json({ message: err });
+          }
+          console.log(result.acknowledged);
+          console.log("Document inserted successfully");
+        });
+        return res.status(200).json({ Auth_Token: token });
+      });
     }
-    const data = new Model({
-      username: req.body.username,
-      role: req.body.role,
-      auth: token,
-    });
-    try {
-      const dataToSave = await data.save();
-      console.log(dataToSave);
-      res.status(200).json(dataToSave);
-    } catch (error) {
-      res.status(400).json({ message: error.message });
-    }
-    res.status(200).json({ Auth_Token: token });
   });
 });
 
 router.post("/tickets/new", vertifyToken, (req, res) => {
   jwt.verify(req.token, secretKey, (err, authData) => {
     if (err) {
-      res.status(401).send({ message: "Invalid Token" });
+      return res.status(401).send({ message: "Invalid Token" });
     } else {
       if (authData.user.role === "admin") {
         res.send("Post API");
@@ -101,5 +110,4 @@ function vertifyToken(req, res, next) {
   } else {
     res.status(403).send({ message: "Token Missing" });
   }
-  res.writeHead(200);
 }

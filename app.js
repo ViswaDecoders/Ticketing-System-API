@@ -20,6 +20,9 @@ var accessLogStream = fs.createWriteStream(path.join(__dirname, "access.log"), {
 });
 app.use(morgan("common", { stream: accessLogStream }));
 
+
+app.locals.database, app.locals.reg_collection, app.locals.ticket_collection;
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server Started at http://localhost:${PORT}`);
@@ -31,8 +34,8 @@ app.listen(PORT, () => {
         throw error;
       }
       database = client.db(DATABASE_NAME);
-      collection = database.collection("registration");
-      collection = database.collection("tickets");
+      reg_collection = database.collection("registration");
+      ticket_collection = database.collection("tickets");
       console.log("Connected to `" + DATABASE_NAME + "`!");
     }
   );
