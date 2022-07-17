@@ -1,19 +1,34 @@
 const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
-const Model = require('../models/model')
 const secretKey = "SeCrEtKeY";
 module.exports = router;
 
 //Post Method
 router.post("/users/new", (req, res) => {
-  const user = { username: "", role: "" };
-  user.username = req.body.username;
-  user.role = req.body.role;
-  jwt.sign({ user }, secretKey, (err, token) => {
-    res.json({ token });
+  username = req.body.username;
+  role = req.body.role;
+  if (role !== "admin" && role !== "employee") {
+    res.status(200).json({ message: "Invalid Role" });
+  }
+  jwt.sign({ username, role }, secretKey, async (err, token) => {
+    if (err) {
+      res.status(400).json({ message: error.message });
+    }
+    const data = new Model({
+      username: req.body.username,
+      role: req.body.role,
+      auth: token,
+    });
+    try {
+      const dataToSave = await data.save();
+      console.log(dataToSave);
+      res.status(200).json(dataToSave);
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+    res.status(200).json({ Auth_Token: token });
   });
-  // res.send(user);
 });
 
 router.post("/tickets/new", vertifyToken, (req, res) => {
@@ -31,31 +46,31 @@ router.post("/tickets/new", vertifyToken, (req, res) => {
 });
 
 router.post("/tickets/markAsClosed", vertifyToken, (req, res) => {
-    jwt.verify(req.token, secretKey, (err, authData) => {
-        if (err) {
-          res.status(401).send({ message: "Invalid Token" });
-        } else {
-          if (authData.user.role === "admin" || authData.user.username === "") {
-            res.send(req.body.id);
-          } else {
-            res.json({ message: "Invalid Access" });
-          }
-        }
-      });
+  jwt.verify(req.token, secretKey, (err, authData) => {
+    if (err) {
+      res.status(401).send({ message: "Invalid Token" });
+    } else {
+      if (authData.user.role === "admin" || authData.user.username === "") {
+        res.send(req.body.id);
+      } else {
+        res.json({ message: "Invalid Access" });
+      }
+    }
+  });
 });
 
 router.post("/tickets/delete", vertifyToken, (req, res) => {
-    jwt.verify(req.token, secretKey, (err, authData) => {
-        if (err) {
-          res.status(401).send({ message: "Invalid Token" });
-        } else {
-          if (authData.user.role === "admin") {
-            res.send(req.body.id);
-          } else {
-            res.json({ message: "Invalid Access" });
-          }
-        }
-      });
+  jwt.verify(req.token, secretKey, (err, authData) => {
+    if (err) {
+      res.status(401).send({ message: "Invalid Token" });
+    } else {
+      if (authData.user.role === "admin") {
+        res.send(req.body.id);
+      } else {
+        res.json({ message: "Invalid Access" });
+      }
+    }
+  });
 });
 
 //Get by ID Method
@@ -86,4 +101,5 @@ function vertifyToken(req, res, next) {
   } else {
     res.status(403).send({ message: "Token Missing" });
   }
+  res.writeHead(200);
 }
