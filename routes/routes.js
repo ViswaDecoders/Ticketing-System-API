@@ -8,6 +8,10 @@ function getRndInteger(min, max) {
   return Math.floor(Math.random() * (max - min)) + min;
 }
 
+router.get("/", (req, res) => {
+    res.status(200).send("Welcome to Ticket API");
+});
+
 router.post("/users/new", (req, res) => {
   username = req.body.username;
   role = req.body.role;
