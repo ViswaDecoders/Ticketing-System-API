@@ -1,7 +1,7 @@
 # Ticketing-System-API (Nodejs + express + MongoDB)
 
 - Heroku link: https://ticket--api.herokuapp.com/
-- Log file: access.log in current directory
+- Log file: https://drive.google.com/file/d/16v6o5POaHRnCboLJvONovAM5uNjN693e/view?usp=sharing
 - Video url: https://drive.google.com/file/d/1XWD9zNxdRLsGfxyvMQl8ViGR4S7jtMSw/view?usp=sharing
 
 
