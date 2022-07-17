@@ -148,27 +148,40 @@ router.post("/tickets/delete", vertifyToken, (req, res) => {
 //Get by ID Method
 router.get("/tickets/:param", vertifyToken, (req, res) => {
   if (req.params.param === "all") {
-    ticket_collection.find({}).toArray((error, result) => {
-        if (error) {
-          return res.status(500).send(error);
-        }
-        console.log("All collection data sent");
-        res.status(200).json(result);
-      });
-  }else{
+    ticket_collection.find({}).toArray((err, result) => {
+      if (err) {
+        return res.status(500).json({ message: err });
+      }
+      console.log("All collection data sent");
+      res.status(200).json(result);
+    });
+  } else {
     res.status(500).json({ message: "Invalid URL" });
   }
 });
 
 router.get("/tickets/", vertifyToken, (req, res) => {
   if (req.query.status) {
-    console.log(req.query.status);
-    res.send("Get by status");
+    ticket_collection
+      .find({ status: req.query.status })
+      .toArray(function (err, result) {
+        if (err) {
+          return res.status(500).json({ message: err });
+        }
+        console.log("All status collection data sent");
+        res.status(200).json(result);
+      });
   } else if (req.query.title) {
-    console.log(req.query.title);
-    res.send("Get by title");
+    ticket_collection
+      .find({ title: req.query.title })
+      .toArray(function (err, result) {
+        if (err) {
+          return res.status(500).json({ message: err });
+        }
+        console.log("All status collection data sent");
+        res.status(200).json(result);
+      });
   }
-  res.send("Nothing");
 });
 
 function vertifyToken(req, res, next) {
