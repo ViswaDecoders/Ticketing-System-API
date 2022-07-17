@@ -6,7 +6,6 @@ const fs = require("fs");
 const path = require("path");
 
 const MongoClient = require("mongodb").MongoClient; // database
-const ObjectId = require("mongodb").ObjectId;
 const CONNECTION_URL = process.env.MONGODB_URI;
 const DATABASE_NAME = "ticketingDB";
 
