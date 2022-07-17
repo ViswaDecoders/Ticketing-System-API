@@ -4,15 +4,18 @@ const jwt = require("jsonwebtoken");
 const secretKey = "SeCrEtKeY";
 module.exports = router;
 
-//Post Method
+function getRndInteger(min, max) {
+  return Math.floor(Math.random() * (max - min)) + min;
+}
+
 router.post("/users/new", (req, res) => {
   username = req.body.username;
   role = req.body.role;
   if (role !== "admin" && role !== "employee") {
-    return res.status(200).json({ message: "Invalid Role" });
+    res.status(200).json({ message: "Invalid Role" });
   }
   reg_collection.find({ username: username }).toArray(function (err, result) {
-    if (err) return res.status(500).json({ message: err });
+    if (err) res.status(500).json({ message: err });
     if (result.length > 0) {
       res
         .status(500)
@@ -20,7 +23,7 @@ router.post("/users/new", (req, res) => {
     } else {
       jwt.sign({ username, role }, secretKey, (err, token) => {
         if (err) {
-          return res.status(400).json({ message: err.message });
+          res.status(400).json({ message: err.message });
         }
         const data = {
           username: username,
@@ -29,12 +32,12 @@ router.post("/users/new", (req, res) => {
         };
         reg_collection.insertOne(data, (err, result) => {
           if (err) {
-            return res.status(500).json({ message: err });
+            res.status(500).json({ message: err });
           }
           console.log(result.acknowledged);
           console.log("Document inserted successfully");
         });
-        return res.status(200).json({ Auth_Token: token });
+        res.status(200).json({ Auth_Token: token });
       });
     }
   });
@@ -45,8 +48,30 @@ router.post("/tickets/new", vertifyToken, (req, res) => {
     if (err) {
       return res.status(401).send({ message: "Invalid Token" });
     } else {
-      if (authData.user.role === "admin") {
-        res.send("Post API");
+      if (authData.role === "admin") {
+        var user;
+        reg_collection
+          .find({ role: "employee" })
+          .toArray(function (err, result) {
+            if (err) return res.status(500).json({ message: err });
+            user = Math.floor(Math.random() * result.length);
+          });
+        id = getRndInteger(0, 1000);
+        const data = {
+          id: id,
+          title: req.body.title,
+          status: "open",
+          assignedTo: user,
+          createdAt: new Date().toLocaleString(),
+        };
+        ticket_collection.insertOne(data, (err, result) => {
+          if (err) {
+            return res.status(500).json({ message: err });
+          }
+          console.log(result.acknowledged);
+          console.log("Ticket raised was inserted successfully");
+        });
+        res.status(200).json({ Id: id });
       } else {
         res.json({ message: "Invalid Access" });
       }
