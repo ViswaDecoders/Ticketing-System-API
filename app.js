@@ -30,7 +30,7 @@ app.listen(PORT, () => {
     { useNewUrlParser: true },
     (err, client) => {
       if (err) {
-        res.status(200).json({ message: err });
+        console.log("message: ",err);
       }
       database = client.db(DATABASE_NAME);
       reg_collection = database.collection("registration");
