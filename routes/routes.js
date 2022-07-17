@@ -83,21 +83,36 @@ router.post("/tickets/markAsClosed", vertifyToken, (req, res) => {
     if (err) {
       res.status(401).json({ message: "Invalid Token" });
     } else {
-        ticket_collection.find({ id: req.ticketID }).toArray(function (err, result) {
-        if (err) res.status(500).json({ message: err });
-        if (result.length !== 0) {
-          if (
-            authData.role === "admin" ||
-            authData.username === result[0].username
-          ) {
-            res.send(req.body.id);
+      ticket_collection
+        .find({ id: req.body.ticketID })
+        .toArray(function (err, result) {
+          if (err) res.status(500).json({ message: err });
+          if (result.length !== 0) {
+            if (
+              authData.role === "admin" ||
+              authData.username === result[0].username
+            ) {
+              ticket_collection.updateOne(
+                { id: req.body.ticketID },
+                { $set: { status: "close" } },
+                function (err, result) {
+                  if (err) {
+                    res.status(500).json({ message: err });
+                  }
+                  console.log(result);
+                  if (result.deletedCount !== 0) {
+                    console.log("document deleted");
+                    res.status(200).json({ message: "Ticket Deleted" });
+                  }
+                }
+              );
+            } else {
+              res.json({ message: "Invalid Access" });
+            }
           } else {
-            res.json({ message: "Invalid Access" });
+            res.status(200).json({ message: "Invalid TicketID" });
           }
-        } else {
-          res.status(200).json({ message: "Invalid TicketID" });
-        }
-      });
+        });
     }
   });
 });
@@ -108,18 +123,21 @@ router.post("/tickets/delete", vertifyToken, (req, res) => {
       res.status(401).json({ message: "Invalid Token" });
     } else {
       if (authData.role === "admin") {
-        ticket_collection.deleteOne({ id: req.ticketID }, (err, result) => {
-          if (err) {
-            res.status(500).json({ message: err });
-          }
-          if (result.deletedCount !== 0){
+        ticket_collection.deleteOne(
+          { id: req.body.ticketID },
+          (err, result) => {
+            if (err) {
+              res.status(500).json({ message: err });
+            }
+            if (result.deletedCount !== 0) {
               console.log(result);
               console.log("document deleted");
               res.status(200).json({ message: "Ticket Deleted" });
-          }else{
-            res.status(200).json({ message: "Invalid TicketID" });
+            } else {
+              res.status(200).json({ message: "Invalid TicketID" });
+            }
           }
-        });
+        );
       } else {
         res.json({ message: "Invalid Access" });
       }
