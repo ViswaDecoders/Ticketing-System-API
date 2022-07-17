@@ -148,9 +148,16 @@ router.post("/tickets/delete", vertifyToken, (req, res) => {
 //Get by ID Method
 router.get("/tickets/:param", vertifyToken, (req, res) => {
   if (req.params.param === "all") {
-    res.send("Get by all ID API");
+    ticket_collection.find({}).toArray((error, result) => {
+        if (error) {
+          return res.status(500).send(error);
+        }
+        console.log("All collection data sent");
+        res.status(200).json(result);
+      });
+  }else{
+    res.status(500).json({ message: "Invalid URL" });
   }
-  res.send("Nothing");
 });
 
 router.get("/tickets/", vertifyToken, (req, res) => {
