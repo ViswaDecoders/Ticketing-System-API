@@ -49,29 +49,28 @@ router.post("/tickets/new", vertifyToken, (req, res) => {
       return res.status(401).send({ message: "Invalid Token" });
     } else {
       if (authData.role === "admin") {
-        var user;
         reg_collection
           .find({ role: "employee" })
           .toArray(function (err, result) {
             if (err) return res.status(500).json({ message: err });
-            user = Math.floor(Math.random() * result.length);
+            user = result[Math.floor(Math.random() * result.length)].username;
+            id = getRndInteger(0, 1000);
+            const data = {
+              id: id,
+              title: req.body.title,
+              status: "open",
+              assignedTo: user,
+              createdAt: new Date().toLocaleString(),
+            };
+            ticket_collection.insertOne(data, (err, result) => {
+              if (err) {
+                return res.status(500).json({ message: err });
+              }
+              console.log(result.acknowledged);
+              console.log("Ticket raised was inserted successfully");
+            });
+            res.status(200).json({ Id: id });
           });
-        id = getRndInteger(0, 1000);
-        const data = {
-          id: id,
-          title: req.body.title,
-          status: "open",
-          assignedTo: user,
-          createdAt: new Date().toLocaleString(),
-        };
-        ticket_collection.insertOne(data, (err, result) => {
-          if (err) {
-            return res.status(500).json({ message: err });
-          }
-          console.log(result.acknowledged);
-          console.log("Ticket raised was inserted successfully");
-        });
-        res.status(200).json({ Id: id });
       } else {
         res.json({ message: "Invalid Access" });
       }
@@ -82,13 +81,23 @@ router.post("/tickets/new", vertifyToken, (req, res) => {
 router.post("/tickets/markAsClosed", vertifyToken, (req, res) => {
   jwt.verify(req.token, secretKey, (err, authData) => {
     if (err) {
-      res.status(401).send({ message: "Invalid Token" });
+      res.status(401).json({ message: "Invalid Token" });
     } else {
-      if (authData.user.role === "admin" || authData.user.username === "") {
-        res.send(req.body.id);
-      } else {
-        res.json({ message: "Invalid Access" });
-      }
+        ticket_collection.find({ id: req.ticketID }).toArray(function (err, result) {
+        if (err) res.status(500).json({ message: err });
+        if (result.length !== 0) {
+          if (
+            authData.role === "admin" ||
+            authData.username === result[0].username
+          ) {
+            res.send(req.body.id);
+          } else {
+            res.json({ message: "Invalid Access" });
+          }
+        } else {
+          res.status(200).json({ message: "Invalid TicketID" });
+        }
+      });
     }
   });
 });
@@ -96,10 +105,21 @@ router.post("/tickets/markAsClosed", vertifyToken, (req, res) => {
 router.post("/tickets/delete", vertifyToken, (req, res) => {
   jwt.verify(req.token, secretKey, (err, authData) => {
     if (err) {
-      res.status(401).send({ message: "Invalid Token" });
+      res.status(401).json({ message: "Invalid Token" });
     } else {
-      if (authData.user.role === "admin") {
-        res.send(req.body.id);
+      if (authData.role === "admin") {
+        ticket_collection.deleteOne({ id: req.ticketID }, (err, result) => {
+          if (err) {
+            res.status(500).json({ message: err });
+          }
+          if (result.deletedCount !== 0){
+              console.log(result);
+              console.log("document deleted");
+              res.status(200).json({ message: "Ticket Deleted" });
+          }else{
+            res.status(200).json({ message: "Invalid TicketID" });
+          }
+        });
       } else {
         res.json({ message: "Invalid Access" });
       }
