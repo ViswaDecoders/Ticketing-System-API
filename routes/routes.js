@@ -147,41 +147,53 @@ router.post("/tickets/delete", vertifyToken, (req, res) => {
 
 //Get by ID Method
 router.get("/tickets/:param", vertifyToken, (req, res) => {
-  if (req.params.param === "all") {
-    ticket_collection.find({}).toArray((err, result) => {
-      if (err) {
-        return res.status(500).json({ message: err });
+  jwt.verify(req.token, secretKey, (err, authData) => {
+    if (err) {
+      res.status(401).json({ message: "Invalid Token" });
+    } else {
+      if (req.params.param === "all") {
+        ticket_collection.find({}).toArray((err, result) => {
+          if (err) {
+            return res.status(500).json({ message: err });
+          }
+          console.log("All collection data sent");
+          res.status(200).json(result);
+        });
+      } else {
+        res.status(500).json({ message: "Invalid URL" });
       }
-      console.log("All collection data sent");
-      res.status(200).json(result);
-    });
-  } else {
-    res.status(500).json({ message: "Invalid URL" });
-  }
+    }
+  });
 });
 
 router.get("/tickets/", vertifyToken, (req, res) => {
-  if (req.query.status) {
-    ticket_collection
-      .find({ status: req.query.status })
-      .toArray(function (err, result) {
-        if (err) {
-          return res.status(500).json({ message: err });
-        }
-        console.log("All status collection data sent");
-        res.status(200).json(result);
-      });
-  } else if (req.query.title) {
-    ticket_collection
-      .find({ title: req.query.title })
-      .toArray(function (err, result) {
-        if (err) {
-          return res.status(500).json({ message: err });
-        }
-        console.log("All status collection data sent");
-        res.status(200).json(result);
-      });
-  }
+  jwt.verify(req.token, secretKey, (err, authData) => {
+    if (err) {
+      res.status(401).json({ message: "Invalid Token" });
+    } else {
+      if (req.query.status) {
+        ticket_collection
+          .find({ status: req.query.status })
+          .toArray(function (err, result) {
+            if (err) {
+              return res.status(500).json({ message: err });
+            }
+            console.log("All status collection data sent");
+            res.status(200).json(result);
+          });
+      } else if (req.query.title) {
+        ticket_collection
+          .find({ title: req.query.title })
+          .toArray(function (err, result) {
+            if (err) {
+              return res.status(500).json({ message: err });
+            }
+            console.log("All status collection data sent");
+            res.status(200).json(result);
+          });
+      }
+    }
+  });
 });
 
 function vertifyToken(req, res, next) {

@@ -20,7 +20,6 @@ var accessLogStream = fs.createWriteStream(path.join(__dirname, "access.log"), {
 });
 app.use(morgan("common", { stream: accessLogStream }));
 
-
 app.locals.database, app.locals.reg_collection, app.locals.ticket_collection;
 
 const PORT = process.env.PORT || 5000;
